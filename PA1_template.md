@@ -1,20 +1,16 @@
----
-title: "Peer Assessment 1"
-output:
-  html_document:
-    keep_md: yes
----
+# Peer Assessment 1
 
-```{r}
+
+```r
 suppressMessages(library(dplyr))
 suppressWarnings(library(stringr))
 suppressWarnings(library(ggplot2))
-
 ```
 
 
 ### Loading and preprocessing the data
-```{r}
+
+```r
 data <- read.csv("activity.csv", header=TRUE, colClasses=c("numeric", "character", "character"))
 
 #Left-pad the intervals with 0 so that they are consistently four characters.
@@ -33,47 +29,55 @@ stepsPerDay <- completeCases%>%group_by(date)%>%summarize(stepsPerDay = sum(step
 
 ### What is the total number of steps taken per day?
 
-```{r}
+
+```r
 hist(stepsPerDay$stepsPerDay, main="Histogram of Daily Steps", xlab="Daily Steps", ylab="Frequency")
 ```
 
+![](PA1_template_files/figure-html/unnamed-chunk-3-1.png) 
+
 **Histogram of total steps per day:**  
 
-```{r}
+
+```r
 options (scipen=6, digits=2)
 averageStepsPerDay <- mean(stepsPerDay$stepsPerDay)
 medianStepsPerDay <- median(stepsPerDay$stepsPerDay)
 ```
 
 
-**Average steps per day: `r averageStepsPerDay`**  
-**Median steps per day: `r medianStepsPerDay`**  
+**Average steps per day: 10766.19**  
+**Median steps per day: 10765**  
 
 ### Average daily activity pattern?
-```{r}
 
+```r
 meanStepsPerInterval = completeCases%>%group_by(interval)%>%summarize(meanSteps = mean(steps))
 plot(meanStepsPerInterval$interval, meanStepsPerInterval$meanSteps, type="l", main="Steps per Interval", xlab="Interval", ylab="Steps")
-
 ```
 
-```{r}
+![](PA1_template_files/figure-html/unnamed-chunk-5-1.png) 
+
+
+```r
 maxSteps <- max(meanStepsPerInterval$meanSteps)
 
 intervalWithMaxSteps = meanStepsPerInterval%>%filter(meanSteps == maxSteps)%>%select(interval)
 ```
 
-**Interval with most steps: `r intervalWithMaxSteps`**  
+**Interval with most steps: 0835**  
 
 ### Imputing missing values
 
-```{r}
+
+```r
 numberOfMissingValues <- nrow(data[is.na(data$steps),])
 ```
 
-**Number of missing values: `r numberOfMissingValues`**  
+**Number of missing values: 2304**  
 
-```{r}
+
+```r
 ##The imputing strategy is to convert NA values to the mean steps in that interval.
 
 #Create new data frame as a copy of the "data" data frame. This is the "new dataset that is equal to the original dataset but with the missing data filled in."
@@ -95,25 +99,28 @@ dataWithImputedValues$steps <- mapply(dataWithImputedValues$steps, FUN = impute,
 
 #Calculate steps per day including the imputed data.
 stepsPerDayWithImputedValues <- dataWithImputedValues%>%group_by(date)%>%summarize(stepsPerDay = sum(steps))
-
 ```
 
 
 **Histogram of total steps per day, including imputed data:**
 
-```{r}
+
+```r
 hist(stepsPerDayWithImputedValues$stepsPerDay, main="Histogram of Daily Steps (with imputed values)", xlab="Daily Steps", ylab="Frequency")
 ```
 
-**Average steps per day: `r mean(stepsPerDayWithImputedValues$stepsPerDay)`**  
-**Median steps per day: `r median(stepsPerDayWithImputedValues$stepsPerDay)`**  
+![](PA1_template_files/figure-html/unnamed-chunk-9-1.png) 
+
+**Average steps per day: 10766.19**  
+**Median steps per day: 10766.19**  
 
 *With or without imputed values, the average and median are almost identical.*  
 
 
 ### Are there differences in activity patterns between weekdays and weekends?
 
-```{r}
+
+```r
 partOfWeek <- function(date){
     ifelse(weekdays(date) %in% c("Saturday", "Sunday"), "weekend", "weekday")
     }
@@ -129,5 +136,6 @@ p <- p + labs(x="Interval", y="Steps", title="Average Steps by Interval")
 p <- p + facet_grid(partOfWeek ~ .)
 
 p
-
 ```
+
+![](PA1_template_files/figure-html/unnamed-chunk-10-1.png) 
